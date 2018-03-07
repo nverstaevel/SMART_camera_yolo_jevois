@@ -120,13 +120,13 @@ def read_YOLO_output():
             s = yolo_output_list[1] + ' ' + yolo_output_list[2] + ' ' + yolo_output_list[3] + '\n'
             print(s)
             nb_people += 1
-            print(nb_people)
+            # print(nb_people)
         if(len(yolo_output_list) > 2 and "Predicted" in yolo_output_list[2]):
             print("New Frame : " + str(nb_people) + " detected!")
             send_nb_people()
             nb_people = 0
             # deactivate_camera()
-            time.sleep(5)
+            time.sleep(30)
             # init_camera()
         # return yolo_output
 
@@ -141,10 +141,19 @@ def read_YOLO_output():
 #
 ################################################################################
 '''
-init_camera()
-if join_lora(config.FORCE_JOIN):
+try:
+    init_camera()
+    if join_lora(config.FORCE_JOIN):
+        send_nb_people()
+        while True:
+            try:
+                read_YOLO_output()
+            except:
+                nb_people = -1
+                send_nb_people()
+                nb_people = 0
+except:
+    nb_people = -2
     send_nb_people()
-    while True:
-        read_YOLO_output()
-
+    nb_people = 0
 #deepsleep(time) + from machine import deepsleep
