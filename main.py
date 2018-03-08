@@ -12,6 +12,10 @@ import cayenneLPP
 gc.enable()
 
 nb_people = 0
+nb_frame = 0
+
+detect_list = [0, 0, 0, 0, 0, 0, 0, 0 , 0, 0,0, 0, 0, 0, 0, 0, 0, 0 , 0, 0]
+detect_list_index = 0
 
 # init Lorawan
 lora = LoRa(mode=LoRa.LORAWAN, adr=False, tx_retries=0, device_class=LoRa.CLASS_A, region=LoRa.AU915)
@@ -19,7 +23,9 @@ lora = LoRa(mode=LoRa.LORAWAN, adr=False, tx_retries=0, device_class=LoRa.CLASS_
 # init uart
 uart1 = UART(1, baudrate=115200, timeout_chars=7)
 
-security_delay = 2.5
+security_delay = 0.5
+
+FRAME_SIZE = 10
 
 def init_camera():
     global security_delay
@@ -86,7 +92,6 @@ def join_lora(force_join = False):
             return True
         else:
             return False
-
     else:
         return True
 
@@ -108,6 +113,10 @@ def send_nb_people():
 
 def read_YOLO_output():
     global nb_people
+    global nb_frame
+    global detect_list
+    global detect_list_index
+    global FRAME_SIZE
     '''Reading the YOLO output via serial port '''
     # reading the value from serial port (RS232)
     yolo_output_string = uart1.readline()
@@ -123,12 +132,15 @@ def read_YOLO_output():
             # print(nb_people)
         if(len(yolo_output_list) > 2 and "Predicted" in yolo_output_list[2]):
             print("New Frame : " + str(nb_people) + " detected!")
-            send_nb_people()
+            print("Frame number : " + str(detect_list_index))
+            detect_list[detect_list_index] = nb_people
+            print(detect_list)
+            if detect_list_index >= (FRAME_SIZE-1):
+                nb_people = max(detect_list)
+                print("Sending " + str(nb_people) + " people detected....")
+                send_nb_people()
             nb_people = 0
-            # deactivate_camera()
-            time.sleep(30)
-            # init_camera()
-        # return yolo_output
+            detect_list_index = (detect_list_index + 1) % FRAME_SIZE
 
 '''
 ################################################################################
@@ -141,19 +153,14 @@ def read_YOLO_output():
 #
 ################################################################################
 '''
-try:
-    init_camera()
-    if join_lora(config.FORCE_JOIN):
-        send_nb_people()
-        while True:
-            try:
-                read_YOLO_output()
-            except:
-                nb_people = -1
-                send_nb_people()
-                nb_people = 0
-except:
-    nb_people = -2
+# try:
+init_camera()
+if join_lora(config.FORCE_JOIN):
     send_nb_people()
-    nb_people = 0
+    while True:
+        read_YOLO_output()
+# except:
+#     nb_people = -2
+#     send_nb_people()
+#     nb_people = 0
 #deepsleep(time) + from machine import deepsleep
