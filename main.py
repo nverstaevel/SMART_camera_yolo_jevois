@@ -108,7 +108,8 @@ def send_nb_people():
     lpp.add_analog_input(nb_people)
 
     # sending the packet via the socket
-    lpp.send()
+    for i in range(3)
+        lpp.send()
     return nb_people
 
 def read_YOLO_output():
