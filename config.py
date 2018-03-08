@@ -7,8 +7,8 @@
 # Version: 07 March 2018
 
 # credentials
-APP_EUI = '70 B3 D5 7E D0 00 AA 04'
-APP_KEY = 'A8 F6 B6 A3 AF 47 45 AE 49 02 E6 35 DA AB 78 7A'
+APP_EUI = ''
+APP_KEY = ''
 
 # max number of connection attemps to TTN
 MAX_JOIN_ATTEMPT = const(50)
